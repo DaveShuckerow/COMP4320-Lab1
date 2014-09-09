@@ -6,7 +6,7 @@ Part A: Datagram socket programming
 The objective is to design a **String Processing Server (SPS)**. This SPS operates string operations as requested by a client. Your server must offer two operations: 
 	1) number of voyels (`vLength`) in a string and 
 	2) String Disemvoweling. 
-1) 'vLength' of a string:
+1) `vLength` of a string:
  	* A client will send a string S to the server, and the server will return the number of voyels in S. The client sends a message with the following format:
 		Total Message Length (TML): 2 bytes
 		Request ID: bytes

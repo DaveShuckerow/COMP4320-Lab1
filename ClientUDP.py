@@ -10,11 +10,10 @@ String Processing client that supports
 		Disemvoweling of String
 """
 
-OUTPUT_STRING = """
-Response: 
-	Size:	{0} bytes
+OUTPUT_STRING = """Response: 
+	Size:		{0} bytes
 	Request ID:	{1}
-	Response:	{2}
+	Answer:		{2}
 """
 
 from socket import *
@@ -42,8 +41,8 @@ class ClientUDP:
 		"""
 		self.sendMessage(85,s)
 
-		response = receiveMessage(6)
-		rtml, rrid, rans = struct.unpack('!hhh',response)
+		response = self.receiveMessage(6)
+		rtml, rrid, rans = struct.unpack('!HHH',response)
 
 		return rtml, rrid, rans
 
@@ -52,23 +51,24 @@ class ClientUDP:
 		Send a string to a remote server.
 		Receive its disemvowelment in return.
 		"""
-		sendMessage(170,s)
+		self.sendMessage(170,s)
 
-		response = receiveMessage(4)
-		rtml, rrid = struct.unpack('!hhh',response)
+		response = self.receiveMessage(4)
+		rtml, rrid = struct.unpack('!HH',response)
 		# Receive disemvoweled string
-		rans = receiveMessage(sock, rtml-4)
+		rans = self.receiveMessage(rtml-4)
 
 		return rtml, rrid, rans
 
 	def sendMessage(self, op, s):
+
 		tml = 5+len(s)
-		rid = requestNumber = requestNumber+1
-		header = struct.pack('!hhb',tml,rid,op)
+		rid = ClientUDP.requestNumber = ClientUDP.requestNumber+1
+		header = struct.pack('!HHB',tml,rid,op)
 		message = str(header) + s
 		
 		# Send the message
-		self.sock.send(message)
+		self.sock.sendall(message)
 
 	def receiveMessage(self, responseLen):
 		response = bytearray()
@@ -79,15 +79,17 @@ class ClientUDP:
 		return response
 
 if __name__ == '__main__':
-	try:
+	#try:
 		client, host, port, op, s = sys.argv
 		port = int(port)
 		op = int(op)
 		client = ClientUDP(host, port)
 		if op == 85:
+			print "How many vowels are in \"{}\"?".format(s)
 			result = client.vowelLength(s)
 		elif op == 170:
+			print "Disemvowel the string \"{}\".".format(s)
 			result = client.disemvowel(s)
-		print OUTPUT_STRING.format(result)
-	except Exception as e:
-		print e
+		print OUTPUT_STRING.format(result[0], result[1], result[2])
+	#except Exception as e:
+	#	print e

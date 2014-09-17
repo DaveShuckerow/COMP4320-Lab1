@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """
-ClientUDP.py
+ClientTCP.py
 Author:	David Shuckerow (djs0017@auburn.edu)
 Date:	9/16/2014
 
@@ -19,12 +19,20 @@ OUTPUT_STRING = """Response:
 from socket import *
 import struct, sys
 
-class ClientUDP:
+class ClientTCP:
 	requestNumber = 0
 	def __init__(self, host, port):
 		self.host = host
 		self.port = port
-		self.sock = socket(AF_INET, SOCK_DGRAM)
+		self.sock = self.connectToServer((host, port))
+
+	def connectToServer(self,addr):
+		"""
+		Connect to a server over TCP.
+		"""
+		sock = socket(AF_INET, SOCK_STREAM)
+		sock.connect(addr)
+		return sock
 
 	def vowelLength(self, s):
 		"""
@@ -33,8 +41,8 @@ class ClientUDP:
 		"""
 		self.sendMessage(85,s)
 
-		response, addr = self.sock.recvfrom(2**12)
-		rtml, rrid, rans = struct.unpack('!HHH',response[:6])
+		response = self.receiveMessage(6)
+		rtml, rrid, rans = struct.unpack('!HHH',response)
 
 		return rtml, rrid, rans
 
@@ -45,31 +53,28 @@ class ClientUDP:
 		"""
 		self.sendMessage(170,s)
 
-		response, addr = self.sock.recvfrom(2**12)
-		header = response[:4]
-		rtml, rrid = struct.unpack('!HH',header)
+		response = self.receiveMessage(4)
+		rtml, rrid = struct.unpack('!HH',response)
 		# Receive disemvoweled string
-		rans = str(response[4:])
+		rans = self.receiveMessage(rtml-4)
 
 		return rtml, rrid, rans
 
 	def sendMessage(self, op, s):
+
 		tml = 5+len(s)
-		rid = ClientUDP.requestNumber = ClientUDP.requestNumber+1
+		rid = ClientTCP.requestNumber = ClientTCP.requestNumber+1
 		header = struct.pack('!HHB',tml,rid,op)
 		message = str(header) + s
 		
 		# Send the message
-		sent = self.sock.sendto(message, (self.host, self.port))
-		while sent < tml:
-			sent += self.sock.sendto(message[sent:], (self.host, self.port))
+		self.sock.sendall(message)
 
 	def receiveMessage(self, responseLen):
 		response = bytearray()
 		bytesReceived = len(response)
 		while bytesReceived < responseLen:
-			resp, addr = self.sock.recvfrom(responseLen)
-			response.extend(resp)
+			response.extend(self.sock.recv(responseLen))
 			bytesReceived = len(response)
 		return response
 
@@ -77,7 +82,7 @@ if __name__ == '__main__':
 	client, host, port, op, s = sys.argv
 	port = int(port)
 	op = int(op)
-	client = ClientUDP(host, port)
+	client = ClientTCP(host, port)
 	if op == 85:
 		print "How many vowels are in \"{}\"?".format(s)
 		result = client.vowelLength(s)

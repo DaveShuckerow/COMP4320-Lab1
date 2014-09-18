@@ -64,15 +64,6 @@ class ClientUDP:
 		while sent < tml:
 			sent += self.sock.sendto(message[sent:], (self.host, self.port))
 
-	def receiveMessage(self, responseLen):
-		response = bytearray()
-		bytesReceived = len(response)
-		while bytesReceived < responseLen:
-			resp, addr = self.sock.recvfrom(responseLen)
-			response.extend(resp)
-			bytesReceived = len(response)
-		return response
-
 if __name__ == '__main__':
 	client, host, port, op, s = sys.argv
 	port = int(port)

@@ -72,7 +72,14 @@ if __name__ == '__main__':
 	if op == 85:
 		print "How many vowels are in \"{}\"?".format(s)
 		result = client.vowelLength(s)
+		print OUTPUT_STRING.format(result[0], result[1], result[2])
 	elif op == 170:
 		print "Disemvowel the string \"{}\".".format(s)
 		result = client.disemvowel(s)
-	print OUTPUT_STRING.format(result[0], result[1], result[2])
+		print OUTPUT_STRING.format(result[0], result[1], result[2])
+	else:
+		print "--INVALID OPERATION REQUESTED--"
+		print "   Use operation 85 or 170"
+		print "   to request vowel length"
+		print "      or disemvowelment"
+	

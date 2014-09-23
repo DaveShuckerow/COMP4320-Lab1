@@ -45,12 +45,11 @@ int main(int argc, char* argv[]) {
 
     while ((n = recvfrom(s, buf, BUF_SIZE, 0, (struct sockaddr *) &other, &len)) != -1) 
     {
-	printf("Received from %s:%d: ", 
+	printf("Received message from client.", 
 		inet_ntoa(other.sin_addr), 
 		ntohs(other.sin_port)); 
 	fflush(stdout);
-	write(1, buf, n);
-	write(1, "\n", 1); 
+	 
   unsigned short messageLength = (buf[0] << 8) + buf[1];
   unsigned short requestNum = (buf[2] << 8) + buf[3];
   unsigned char operation = buf[4];
@@ -81,14 +80,10 @@ int main(int argc, char* argv[]) {
                 i++;
           }   
           unsigned char countChar = (char)count;
-          buf[5] = '0'+((unsigned char)count);
-          buf[4] = '0'+(unsigned char)(count >> 8);
-          buf[1] = '0'+((unsigned char)messageLength);
-          buf[0] = '0'+(unsigned char)(messageLength >> 8);
-          printf("%c\n", buf[0]);
-          printf("%c\n", buf[1]);
-          printf("%c\n", buf[4]);
-          printf("%c\n", buf[5]);
+          buf[5] = ((unsigned char)count);
+          buf[4] = (unsigned char)(count >> 8);
+          buf[1] = ((unsigned char)messageLength);
+          buf[0] = (unsigned char)(messageLength >> 8);
        }
        
        else if (operation == 170)
@@ -96,34 +91,42 @@ int main(int argc, char* argv[]) {
            // printf("Hey");
            // fflush(stdout);
             int k = 0;
-            char noVow[100];
-            int j = 0;
-            while(string[j] != '\0') 
-            {
-               if(!string[j] == 'a' || !string[j] == 'e'
-                   || !string[j] == 'i' || !string[j] == 'o' || !string[j] =='u'
-                   || !string [j] == 'A' || !string[j] == 'E' || !string[j] =='I'
-                   || !string [j] == 'O' || !string[j] == 'U')  
+            unsigned char noVow[1024];
+            int j = 5;
+           
+            int cons = 0;
+            while(buf[j] != '\0' && j < messageLength) 
+            {   
+               if(buf[j] == 'a' || buf[j] == 'e' || buf[j] == 'i' || buf[j] == 'o'
+                  || buf[j] == 'u' || buf[j] == 'A' || buf[j] == 'E' || buf[j] =='I'
+                   || buf[j] == 'O' || buf[j] == 'U')
                 {
-                noVow[k] = string[j];
-                k++;
-                }
+                  buf[j-1] = buf[j+1];
+                
                 j++;
+                
+
+                }
+              else  
+              {
+                   buf[j - 1] = buf[j];
+                  j++;
+                  cons++;
+              }
+                
             }
-            int r = 0;
-            int t = 5;
-            while (noVow[r] != '\0')
-            {
-              buf[t] = noVow[r];
-              r++;
-              t++;
-            }
-            
+            messageLength = cons + 4;
+            buf[4 + cons] = '\0';
+            n =  cons + 4;
+            buf[1] = ((unsigned char)messageLength);
+            buf[0] = (unsigned char)(messageLength >> 8);
        }
-  
+   
+ 
 	/* echo back to client */
 	sendto(s, buf, n, 0, (struct sockaddr *) &other, len);
     }
+    
     memset(buf, 0, sizeof buf);
     close(s);
     return 0;

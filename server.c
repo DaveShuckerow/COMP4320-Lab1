@@ -12,12 +12,11 @@
 const char *vLengthCode = "85";
 const char *dVowelCode = "170";
 const char *vowels ="aeiouAEIOU";
-int count = 0;
+int count;
 
 
 int main(int argc, char* argv[]) {
-    char buf[BUF_SIZE];
-    char temp[BUF_SIZE];
+    unsigned char buf[BUF_SIZE];
     struct sockaddr_in self, other;
     int len = sizeof(struct sockaddr_in);
     int n, s, port;
@@ -50,57 +49,70 @@ int main(int argc, char* argv[]) {
 		inet_ntoa(other.sin_addr), 
 		ntohs(other.sin_port)); 
 	fflush(stdout);
-    int u = 0;
-  while (u < 4) 
-  {
-    temp[u] = buf[u];
-    u++;
-  }
 	write(1, buf, n);
 	write(1, "\n", 1); 
- 
-    //char *c = buf;
-     //while (*c)
-   //{
-       //if (strchr(vLengthCode, *c))
-      if (buf[4] == 85)
+  unsigned short messageLength = (buf[0] << 8) + buf[1];
+  unsigned short requestNum = (buf[2] << 8) + buf[3];
+  unsigned char operation = buf[4];
+  unsigned char string[BUF_SIZE];
+  int q = 0;
+  int p;
+  for (p = 5; buf[p] != '\0'; p++)
+   {
+     string[q] = buf[p];
+     q++;
+   }
+
+      if (operation == 85)
        {   
           count = 0;
-          int i = 5;
-          printf("Hi");
-          fflush(stdout);
-          while(buf[i] != '\0') 
+          int i = 0;
+          n = 6;
+          messageLength = 6;
+          while(string[i] != '\0') 
           {
-                if(strchr(vowels, i)) 
+                if(string[i] == 'a' || string[i] == 'e'
+                   || string[i] == 'i' || string[i] == 'o' || string[i] =='u'
+                   || string [i] == 'A' || string[i] == 'E' || string[i] =='I'
+                   || string [i] == 'O' || string[i] == 'U') 
                 {
                 count++;
                 }
                 i++;
           }   
-          buf[1] = count;
-          
+          unsigned char countChar = (char)count;
+          buf[5] = '0'+((unsigned char)count);
+          buf[4] = '0'+(unsigned char)(count >> 8);
+          buf[1] = '0'+((unsigned char)messageLength);
+          buf[0] = '0'+(unsigned char)(messageLength >> 8);
+          printf("%c\n", buf[0]);
+          printf("%c\n", buf[1]);
+          printf("%c\n", buf[4]);
+          printf("%c\n", buf[5]);
        }
-       //else if (strchr(dVowelCode, *c))
-       else if (buf[4] == 170)
+       
+       else if (operation == 170)
        {    
-            printf("Hey");
-            fflush(stdout);
+           // printf("Hey");
+           // fflush(stdout);
             int k = 0;
-            char noVow[100] = "";
-            int j = 1;
-            while(buf[j] != '\0') 
+            char noVow[100];
+            int j = 0;
+            while(string[j] != '\0') 
             {
-                if(!strchr(vowels, j)) 
+               if(!string[j] == 'a' || !string[j] == 'e'
+                   || !string[j] == 'i' || !string[j] == 'o' || !string[j] =='u'
+                   || !string [j] == 'A' || !string[j] == 'E' || !string[j] =='I'
+                   || !string [j] == 'O' || !string[j] == 'U')  
                 {
-                noVow[k] = buf[j];
+                noVow[k] = string[j];
                 k++;
                 }
                 j++;
             }
-            // Write to buffer
             int r = 0;
-            int t = 1;
-            while (noVow != " ")
+            int t = 5;
+            while (noVow[r] != '\0')
             {
               buf[t] = noVow[r];
               r++;
@@ -108,14 +120,11 @@ int main(int argc, char* argv[]) {
             }
             
        }
-   //    c++;
-  // }
-  // memcpy (buf, temp, strlen(temp) + 1);
+  
 	/* echo back to client */
-   
 	sendto(s, buf, n, 0, (struct sockaddr *) &other, len);
     }
- 
+    memset(buf, 0, sizeof buf);
     close(s);
     return 0;
 }

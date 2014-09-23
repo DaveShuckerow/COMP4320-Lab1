@@ -1,0 +1,24 @@
+Group 17 (David Shuckerow, Chris Boling, Dillon Reedy) Report:
+Our code works.
+
+To compile ServerUDP.c:
+gcc ServerUDP.c -o ServerUDP
+
+To compile ClientTCP.c:
+gcc ClientTCP.c -o ClientTCP
+
+The .py files do not need to be compiled.
+
+To run ServerUDP:
+./ServerUDP <portnumber>
+
+To run ClientUDP.py:
+python ClientUDP.py <hostname> <portnumber> <operation> <string>
+
+To run ServerTCP.py:
+python ServerTCP.py <portnumber>
+
+To run ClientTCP:
+./ClientTCP <hostname> <portnumber> <operation> <string>
+
+No known bugs.

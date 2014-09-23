@@ -17,7 +17,7 @@ OUTPUT_STRING = """Response:
 """
 
 from socket import *
-import struct, sys
+import struct, sys, time
 
 class ClientUDP:
 	requestNumber = 0
@@ -54,6 +54,9 @@ class ClientUDP:
 		return rtml, rrid, rans
 
 	def sendMessage(self, op, s):
+		"""
+		Conduct the message sending.
+		"""
 		tml = 5+len(s)
 		rid = ClientUDP.requestNumber = ClientUDP.requestNumber+1
 		header = struct.pack('!HHB',tml,rid,op)
@@ -70,13 +73,17 @@ if __name__ == '__main__':
 	op = int(op)
 	client = ClientUDP(host, port)
 	if op == 85:
+		start = time.time()
 		print "How many vowels are in \"{}\"?".format(s)
 		result = client.vowelLength(s)
 		print OUTPUT_STRING.format(result[0], result[1], result[2])
+		print "\tRound Trip Time: {}s".format(time.time()-start)
 	elif op == 170:
+		start = time.time()
 		print "Disemvowel the string \"{}\".".format(s)
 		result = client.disemvowel(s)
 		print OUTPUT_STRING.format(result[0], result[1], result[2])
+		print "\tRound Trip Time: {}s".format(time.time()-start)
 	else:
 		print "--INVALID OPERATION REQUESTED--"
 		print "   Use operation 85 or 170"

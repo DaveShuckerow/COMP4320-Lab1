@@ -32,9 +32,9 @@ class ServerTCP:
 		while True:
 			conn, addr = self.sock.accept()
 			print "Received connection from {}".format(addr)
-			header = self.receiveMessage(conn, 5)
-			tml, rid, op = struct.unpack("!HHB", header)
-			s = str(self.receiveMessage(conn, tml-5))
+			header = self.receiveMessage(conn, 1024)
+			tml, rid, op = struct.unpack("!HHB", header[:5])
+			s = str(header[5:])
 			print "Request: {0} {1} {2} {3}".format(tml, rid, op, s)
 			ans = 0
 			if op == 85:
@@ -63,11 +63,7 @@ class ServerTCP:
 		return answer
 
 	def receiveMessage(self, conn, responseLen):
-		response = bytearray()
-		bytesReceived = len(response)
-		while bytesReceived < responseLen:
-			response.extend(conn.recv(responseLen))
-			bytesReceived = len(response)
+		response = conn.recv(responseLen)
 		return response
 
 if __name__ == '__main__':

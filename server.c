@@ -81,10 +81,10 @@ int main(int argc, char* argv[]) {
                 i++;
           }   
           unsigned char countChar = (char)count;
-          buf[5] = '0'+((unsigned char)count);
-          buf[4] = '0'+(unsigned char)(count >> 8);
-          buf[1] = '0'+((unsigned char)messageLength);
-          buf[0] = '0'+(unsigned char)(messageLength >> 8);
+          buf[5] = ((unsigned char)count);
+          buf[4] = (unsigned char)(count >> 8);
+          buf[1] = ((unsigned char)messageLength);
+          buf[0] = (unsigned char)(messageLength >> 8);
           printf("%c\n", buf[0]);
           printf("%c\n", buf[1]);
           printf("%c\n", buf[4]);

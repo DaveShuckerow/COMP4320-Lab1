@@ -41,8 +41,8 @@ class ClientTCP:
 		"""
 		self.sendMessage(85,s)
 
-		response = self.receiveMessage(6)
-		rtml, rrid, rans = struct.unpack('!HHH',response)
+		response = self.receiveMessage(1024)
+		rtml, rrid, rans = struct.unpack('!HHH',response[:6])
 
 		return rtml, rrid, rans
 
@@ -53,10 +53,10 @@ class ClientTCP:
 		"""
 		self.sendMessage(170,s)
 
-		response = self.receiveMessage(4)
-		rtml, rrid = struct.unpack('!HH',response)
+		response = self.receiveMessage(1024)
+		rtml, rrid = struct.unpack('!HH',response[:4])
 		# Receive disemvoweled string
-		rans = self.receiveMessage(rtml-4)
+		rans = response[4:]
 
 		return rtml, rrid, rans
 
@@ -71,11 +71,7 @@ class ClientTCP:
 		self.sock.sendall(message)
 
 	def receiveMessage(self, responseLen):
-		response = bytearray()
-		bytesReceived = len(response)
-		while bytesReceived < responseLen:
-			response.extend(self.sock.recv(responseLen))
-			bytesReceived = len(response)
+		response = self.sock.recv(responseLen)
 		return response
 
 if __name__ == '__main__':
